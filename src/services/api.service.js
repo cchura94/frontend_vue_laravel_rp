@@ -10,9 +10,33 @@ export default function Api() {
         baseURL: url_base,
         headers: {
             'Accept': 'application/json',
-            'Authorization': 'bearer '+ token
+            'Authorization': 'Bearer '+ token
         }
     })
+
+    // interceptar
+    api.interceptors.response.use(
+        (response) => {
+            return response;
+        },
+        (error) => {
+            // error de autenticación
+            if(error.response.status === 401){
+                console.log("INTERCEPTOR **** 401")
+                
+                localStorage.removeItem("access_token");
+                window.location.href = "/login"
+            }
+
+            // error de autorización
+            if(error.response.status === 403){
+                console.log("INTERCEPTOR **** 403")
+
+            }
+
+            return Promise.reject(error);
+        }
+    )
 
     return api
 }
