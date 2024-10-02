@@ -5,22 +5,31 @@ import Login from "./../views/auth/Login.vue";
 import Perfil from "./../views/admin/perfil/Perfil.vue"
 import Usuario from "./../views/admin/usuario/Usuario.vue"
 
+import AppLayout from "@/layout/AppLayout.vue"
+
 const routes = [
     { path: '/', component: Inicio},
     { path: '/nosotros', component: Nosotros },
     { path: '/login', component: Login, name: 'Login', meta:{redirectIfAuth: true} },
     {
-        path: '/admin/perfil',
-        name: "MiPerfil",
-        component: Perfil,
-        meta: {requireAuth: true}
-    },
-    {
-        path: '/admin/usuario',
-        name: "Usuario",
-        component: Usuario,
-        meta: {requireAuth: true}
+        path: '/admin',
+        component: AppLayout,
+        children: [
+            {
+                path: 'perfil',
+                name: "MiPerfil",
+                component: Perfil,
+                meta: {requireAuth: true}
+            },
+            {
+                path: 'usuario',
+                name: "Usuario",
+                component: Usuario,
+                meta: {requireAuth: true}
+            }
+        ]
     }
+    
 
 ]
 
