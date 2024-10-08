@@ -4,6 +4,7 @@ import Nosotros from "./../views/page/Nosotros.vue";
 import Login from "./../views/auth/Login.vue";
 import Perfil from "./../views/admin/perfil/Perfil.vue"
 import Usuario from "./../views/admin/usuario/Usuario.vue"
+import Role from './../views/admin/role/Role.vue'
 
 import AppLayout from "@/layout/AppLayout.vue"
 
@@ -25,6 +26,12 @@ const routes = [
                 path: 'usuario',
                 name: "Usuario",
                 component: Usuario,
+                meta: {requireAuth: true}
+            },
+            {
+                path: 'roles',
+                name: "Role",
+                component: Role,
                 meta: {requireAuth: true}
             }
         ]

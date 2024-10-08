@@ -26,7 +26,7 @@ const model = ref([
             {
                 label: 'Roles',
                 icon: 'pi pi-fw pi-globe',
-                to: '/'
+                to: '/admin/roles'
             },
             {
                 label: 'Gestiónar',
