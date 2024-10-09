@@ -18,4 +18,8 @@ export default {
     eliminar: (id) => {
         return Api().delete("/usuario/"+id);
     },
+
+    asignarRoles: (id, roles_id) => {
+        return Api().post("/usuario/"+id+"/asignar-roles", roles_id);
+    },
 }
