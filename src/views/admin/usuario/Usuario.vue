@@ -103,6 +103,36 @@
       </div>
     </Dialog>
 
+    <Button
+          type="button"
+          label="Generar PDF"
+          @click="generarPDF()"
+        ></Button>
+
+        <Button
+          type="button"
+          label="Generar PDF 2"
+          @click="generarPDF2()"
+        ></Button>
+
+        <input type="file" @change="seleccionarArchivos" multiple>
+
+<Dialog v-model:visible="visible_pdf" modal header="PDF Visual">
+  <Button
+      type="button"
+      label="Descargar PDF"
+      @click="generarPDF()"
+    ></Button>
+ 
+  <VuePDF :pdf="pdf"/>
+    
+    <div class="flex justify-end gap-2">
+        <Button type="button" label="Cerrar" severity="secondary" @click="visible_pdf = false"></Button>
+
+    </div>
+</Dialog>
+
+        
     <DataTable :value="usuarios" tableStyle="min-width: 50rem">
       <Column field="id" header="ID"></Column>
       <Column field="name" header="USUARIO"></Column>
@@ -185,6 +215,8 @@ import { onMounted, ref } from "vue";
 import usuarioService from "./../../../services/usuario.service";
 import roleService from "../../../services/role.service";
 
+import {VuePDF, usePDF} from '@tato30/vue-pdf'
+
 const usuarios = ref([]);
 const loading = ref(true);
 const usuario = ref({});
@@ -192,6 +224,10 @@ const visible = ref(false);
 const visible_roles = ref(false);
 const roles = ref([]);
 const roleSelecteds = ref()
+const pdfUrl = ref(null)
+
+const visible_pdf = ref(false);
+const { pdf, pages } = usePDF(pdfUrl)
 
 onMounted(() => {
   getUsuarios();
@@ -281,5 +317,47 @@ const guardarRolesAsignados = async () => {
         getUsuarios();
 
     }
+}
+
+const generarPDF = async () => {
+    const respueta = await usuarioService.generarReportePDF();
+
+    const url = window.URL.createObjectURL(new Blob([respueta.data], {type: 'application/pdf'}));
+
+    const link = document.createElement('a');
+    link.href = url;
+
+    link.setAttribute('download', 'lista-usuarios.pdf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+const generarPDF2 = async () => {
+    visible_pdf.value = true
+    
+    const respueta = await usuarioService.generarReportePDF();
+
+    const blob = new Blob([respueta.data], {type: 'application/pdf'});
+    pdfUrl.value = window.URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+
+    link.setAttribute('download', 'lista-usuarios.pdf');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+const seleccionarArchivos = async (e) => {
+  console.log(e.target.files);
+  let fd = new FormData();
+
+  fd.append("archivos", e.target.files[0]);
+  fd.append("archivos", e.target.files[1]);
+  fd.append("archivos", e.target.files[2]);
+
+  await usuarioService.guardar(fd);
 }
 </script>

@@ -22,4 +22,8 @@ export default {
     asignarRoles: (id, roles_id) => {
         return Api().post("/usuario/"+id+"/asignar-roles", roles_id);
     },
+
+    generarReportePDF: () => {
+        return Api().get("/usuario/reporte-pdf", {responseType: 'blob'});
+    }
 }
