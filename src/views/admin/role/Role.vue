@@ -3,9 +3,9 @@
 
     <!--{{ roles }}-->
 
-    <Button type="button" label="Nuevo Role" @click="visible_editar_role = true"></Button>
+    <Button v-if="$can('create', 'role')" type="button" label="Nuevo Role" @click="visible_editar_role = true"></Button>
 
-<div v-if="roles.length>0">
+<div v-if="roles.length>0 && $can('index', 'role')">
     <DataTable :value="roles" tableStyle="min-width: 50rem">
         <Column field="id" header="ID"></Column>
         <Column field="name" header="NOMBRE"></Column>
@@ -65,6 +65,7 @@
       </div>
 
       <Button
+            v-if="$can('create', 'permiso')"
           type="button"
           label="Guardar Permiso"
           @click="guardarPermiso()"
@@ -108,6 +109,7 @@ import Swal from "sweetalert2"
 import { onMounted, ref } from "vue";
 import roleService from "./../../../services/role.service.js"
 import permisoService from "./../../../services/permiso.service.js"
+
 
 const roles = ref([]);
 const lista_permisos = ref([]);

@@ -9,7 +9,7 @@
       v-if="loading"
     />
 
-    <Button label="Nuevo Usuario" @click="visible = true" />
+    <Button v-if="$can('create', 'user')" label="Nuevo Usuario" @click="visible = true" />
 
     <Dialog
       v-model:visible="visible"
@@ -104,18 +104,18 @@
     </Dialog>
 
     <Button
+    v-if="$can('index', 'user')"
           type="button"
           label="Generar PDF"
           @click="generarPDF()"
         ></Button>
 
         <Button
+        v-if="$can('index', 'user')"
           type="button"
           label="Generar PDF 2"
           @click="generarPDF2()"
         ></Button>
-
-        <input type="file" @change="seleccionarArchivos" multiple>
 
 <Dialog v-model:visible="visible_pdf" modal header="PDF Visual">
   <Button
@@ -133,7 +133,7 @@
 </Dialog>
 
         
-    <DataTable :value="usuarios" tableStyle="min-width: 50rem">
+    <DataTable :value="usuarios" tableStyle="min-width: 50rem" v-if="$can('index', 'user')">
       <Column field="id" header="ID"></Column>
       <Column field="name" header="USUARIO"></Column>
 

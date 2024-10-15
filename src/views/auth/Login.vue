@@ -51,7 +51,6 @@
 
                         <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                             <div class="flex items-center">
-                                <Checkbox v-model="checked" id="rememberme1" binary class="mr-2"></Checkbox>
                                 <label for="rememberme1">Remember me</label>
                             </div>
                             <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
@@ -69,6 +68,7 @@
 import { ref, onMounted } from "vue";
 import authService from "./../../services/auth.service"
 import {useRouter} from "vue-router"
+import ability from './../../casl/ability'
 
 const credenciales = ref({});
 const router = useRouter();
@@ -80,12 +80,19 @@ async function funIngresar(){
     
      try {
          const { data } = await authService.login(credenciales.value);
-         console.log(data.access_token)
+         console.log(JSON.stringify(data.permisos))
+         data.permisos.push({action: 'show', subject: 'auth'})
+
          localStorage.setItem("access_token", data.access_token)
+         localStorage.setItem("permisos", JSON.stringify(data.permisos))
+         
+         // (CASL) ability
+        ability.update(data.permisos)
+
          router.push({name: "MiPerfil"})
          
      } catch (error) {
-         alert("Error ")
+         console.log("Error ", error)
          
      }
 

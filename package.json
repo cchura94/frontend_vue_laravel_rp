@@ -9,6 +9,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@casl/ability": "^6.7.1",
+    "@casl/vue": "^2.2.2",
     "@primevue/themes": "^4.0.0",
     "@tato30/vue-pdf": "^1.11.1",
     "axios": "^1.7.7",

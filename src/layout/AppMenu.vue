@@ -14,19 +14,20 @@ const model = ref([
     {
         label: 'Gestión Usuarios',
         items: [
-            { label: 'Lista Usuarios', icon: 'pi pi-fw pi-id-card', to: '/admin/usuario' },
-            { label: 'Nuevo Usuario', icon: 'pi pi-fw pi-check-square', to: '/admin/usuario/nuevo' }
+            { label: 'Lista Usuarios', icon: 'pi pi-fw pi-id-card', to: '/admin/usuario', name: 'user' },
         ]
     },
     {
         label: 'Seguridad',
         icon: 'pi pi-fw pi-briefcase',
         to: '/roles',
+        visible: true,
         items: [
             {
                 label: 'Roles',
                 icon: 'pi pi-fw pi-globe',
-                to: '/admin/roles'
+                to: '/admin/roles',
+                name: 'role'
             },
             {
                 label: 'Gestiónar',
@@ -35,7 +36,8 @@ const model = ref([
                     {
                         label: 'Login',
                         icon: 'pi pi-fw pi-sign-in',
-                        to: '/auth/login'
+                        to: '/auth/login',
+                        name: 'auth'
                     },
                     {
                         label: 'Error',
