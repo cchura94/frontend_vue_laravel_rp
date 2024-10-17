@@ -1,20 +1,22 @@
 <script setup>
 import { ref } from 'vue';
-
+import { useAbility } from '@casl/vue'
 import AppMenuItem from './AppMenuItem.vue';
+
+const { can } = useAbility()
 
 const model = ref([
     {
         label: 'Administración',
         items: [
-            { label: 'Admin', icon: 'pi pi-fw pi-home', to: '/admin' },
-            { label: 'Perfil', icon: 'pi pi-fw pi-user', to: '/admin/perfil' }
+            { label: 'Admin', icon: 'pi pi-fw pi-home', to: '/admin', visible: can('manage', 'all') },
+            { label: 'Perfil', icon: 'pi pi-fw pi-user', to: '/admin/perfil', visible: can('index', 'user') }
         ]
     },
     {
         label: 'Gestión Usuarios',
         items: [
-            { label: 'Lista Usuarios', icon: 'pi pi-fw pi-id-card', to: '/admin/usuario', name: 'user' },
+            { label: 'Lista Usuarios', icon: 'pi pi-fw pi-id-card', to: '/admin/usuario', name: 'user', visible: can('index', 'user') },
         ]
     },
     {
@@ -27,8 +29,10 @@ const model = ref([
                 label: 'Roles',
                 icon: 'pi pi-fw pi-globe',
                 to: '/admin/roles',
-                name: 'role'
+                name: 'role',
+                visible: can('index', 'role')
             },
+            /*
             {
                 label: 'Gestiónar',
                 icon: 'pi pi-fw pi-user',
@@ -51,6 +55,7 @@ const model = ref([
                     }
                 ]
             }
+            */
         ]
     }
 ]);

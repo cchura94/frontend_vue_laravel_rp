@@ -25,5 +25,14 @@ export default {
 
     generarReportePDF: () => {
         return Api().get("/usuario/reporte-pdf", {responseType: 'blob'});
+    },
+
+    asignarDatosPersonales: (datos) => {
+        return Api().post(`/usuario/${datos.user_id}/asignar-datos-personales`, datos);
+    },
+
+    actualizarDatosPersonales: (datos) => {
+        return Api().put(`/persona/${datos.id}`, datos);
+
     }
 }

@@ -9,7 +9,11 @@
       v-if="loading"
     />
 
-    <Button v-if="$can('create', 'user')" label="Nuevo Usuario" @click="visible = true" />
+    <Button
+      v-if="$can('create', 'user')"
+      label="Nuevo Usuario"
+      @click="visible = true"
+    />
 
     <Dialog
       v-model:visible="visible"
@@ -104,44 +108,52 @@
     </Dialog>
 
     <Button
-    v-if="$can('index', 'user')"
-          type="button"
-          label="Generar PDF"
-          @click="generarPDF()"
-        ></Button>
-
-        <Button
-        v-if="$can('index', 'user')"
-          type="button"
-          label="Generar PDF 2"
-          @click="generarPDF2()"
-        ></Button>
-
-<Dialog v-model:visible="visible_pdf" modal header="PDF Visual">
-  <Button
+      v-if="$can('index', 'user')"
       type="button"
-      label="Descargar PDF"
+      label="Generar PDF"
       @click="generarPDF()"
     ></Button>
- 
-  <VuePDF :pdf="pdf"/>
-    
-    <div class="flex justify-end gap-2">
-        <Button type="button" label="Cerrar" severity="secondary" @click="visible_pdf = false"></Button>
 
-    </div>
-</Dialog>
+    <Button
+      v-if="$can('index', 'user')"
+      type="button"
+      label="Generar PDF 2"
+      @click="generarPDF2()"
+    ></Button>
 
-        
-    <DataTable :value="usuarios" tableStyle="min-width: 50rem" v-if="$can('index', 'user')">
+    <Dialog v-model:visible="visible_pdf" modal header="PDF Visual">
+      <Button
+        type="button"
+        label="Descargar PDF"
+        @click="generarPDF()"
+      ></Button>
+
+      <VuePDF :pdf="pdf" />
+
+      <div class="flex justify-end gap-2">
+        <Button
+          type="button"
+          label="Cerrar"
+          severity="secondary"
+          @click="visible_pdf = false"
+        ></Button>
+      </div>
+    </Dialog>
+
+    <DataTable
+      :value="usuarios"
+      tableStyle="min-width: 50rem"
+      v-if="$can('index', 'user')"
+    >
       <Column field="id" header="ID"></Column>
       <Column field="name" header="USUARIO"></Column>
+
 
       <Column field="email" header="CORREO ELECTRONICO"></Column>
       <Column :exportable="false" style="min-width: 12rem" header="PERSONALES">
         <template #body="slotProps">
           <div>
-            {{ slotProps.data.persona }}
+            <Button :label="`${slotProps.data.persona?'Actualizar':'Asignar'}`" @click="datosPersonales(slotProps.data)" />
           </div>
         </template>
       </Column>
@@ -208,14 +220,52 @@
       </tr>
     </tbody>
   </table>
+
+
+  <Dialog v-model:visible="visible_persona" modal header="Actualizar datos Personales" :style="{ width: '25rem' }">
+    <!--{{ persona }}-->
+    <span class="text-surface-500 dark:text-surface-400 block mb-8">Actualiza Información personal.</span>
+    <div class="flex items-center gap-4 mb-4">
+        <label for="nom" class="font-semibold w-24">Nombres</label>
+        <InputText id="nom" class="flex-auto" autocomplete="off" v-model="persona.nombres" />
+    </div>
+    <div class="flex items-center gap-4 mb-4">
+        <label for="ap" class="font-semibold w-24">Apellidos</label>
+        <InputText id="ap" class="flex-auto" autocomplete="off" v-model="persona.apellidos" />
+    </div>
+    <div class="flex items-center gap-4 mb-4">
+        <label for="ci" class="font-semibold w-24">CI</label>
+        <InputText id="ci" class="flex-auto" autocomplete="off" v-model="persona.ci" />
+    </div>
+    <div class="flex items-center gap-4 mb-4">
+        <label for="tel" class="font-semibold w-24">Telefono</label>
+        <InputText id="tel" class="flex-auto" autocomplete="off" v-model="persona.telefono" />
+    </div>
+    <div class="flex items-center gap-4 mb-4">
+        <label for="dir" class="font-semibold w-24">DIrección</label>
+        <InputText id="dir" class="flex-auto" autocomplete="off" v-model="persona.direccion"/>
+    </div>
+    <div class="flex items-center gap-4 mb-8">
+        <label for="email" class="font-semibold w-24">Unidad</label>
+        
+        <Select v-model="persona.unidad_id" :options="unidades" optionLabel="nombre" optionValue="id" placeholder="Selecciona una unidad" class="w-full md:w-56" />
+
+
+    </div>
+    <div class="flex justify-end gap-2">
+        <Button type="button" label="Cancelar" severity="secondary" @click="visible_persona = false"></Button>
+        <Button type="button" label="Guardar Datos Personales" @click="guardarDatosPersonales()"></Button>
+    </div>
+</Dialog>
 </template>
 
 <script setup>
 import { onMounted, ref } from "vue";
 import usuarioService from "./../../../services/usuario.service";
 import roleService from "../../../services/role.service";
+import unidadService from "../../../services/unidad.service";
 
-import {VuePDF, usePDF} from '@tato30/vue-pdf'
+import { VuePDF, usePDF } from "@tato30/vue-pdf";
 
 const usuarios = ref([]);
 const loading = ref(true);
@@ -223,33 +273,45 @@ const usuario = ref({});
 const visible = ref(false);
 const visible_roles = ref(false);
 const roles = ref([]);
-const roleSelecteds = ref()
-const pdfUrl = ref(null)
+const roleSelecteds = ref();
+const pdfUrl = ref(null);
+const visible_persona = ref(false)
+const unidades = ref([]);
+
+const persona = ref({})
+
+const dato_user_id = ref(null)
 
 const visible_pdf = ref(false);
-const { pdf, pages } = usePDF(pdfUrl)
+const { pdf, pages } = usePDF(pdfUrl);
 
 onMounted(() => {
   getUsuarios();
   getRoles();
+  getUnidades();
 });
 
 async function getUsuarios() {
-    try {
-        loading.value = true;
-        const { data } = await usuarioService.listar();
-        usuarios.value = data.data;
-        loading.value = false;
-        
-    } catch (error) {
-        alert("error al recuperar la lista de usuarios")
-    }
+  try {
+    loading.value = true;
+    const { data } = await usuarioService.listar();
+    usuarios.value = data.data;
+    loading.value = false;
+  } catch (error) {
+    alert("error al recuperar la lista de usuarios");
+  }
 }
 
 async function getRoles() {
   const { data } = await roleService.listar();
   roles.value = data.roles;
 }
+
+async function getUnidades() {
+  const { data } = await unidadService.listar();
+  unidades.value = data;
+}
+
 
 async function guardarUsuario() {
   try {
@@ -282,73 +344,72 @@ async function confirmDeleteProduct(data) {
 }
 
 const editRoles = (data) => {
-    console.log(data);
-    const nuevosDatos = []
+  console.log(data);
+  const nuevosDatos = [];
 
-    roleSelecteds.value = [];
-    data.roles.forEach((rol_select) => {
-        const existe = roles.value.some(obj => obj.id == rol_select.id)
-        if(existe){
-            const {pivot, ...rest} = rol_select;
-            // roles.value.splice(roles.value.findIndex(obj => obj.id == rol_select.id), 1);
-            nuevosDatos.push(rest);
-        }
+  roleSelecteds.value = [];
+  data.roles.forEach((rol_select) => {
+    const existe = roles.value.some((obj) => obj.id == rol_select.id);
+    if (existe) {
+      const { pivot, ...rest } = rol_select;
+      // roles.value.splice(roles.value.findIndex(obj => obj.id == rol_select.id), 1);
+      nuevosDatos.push(rest);
+    }
+  });
 
-    })
-
-    roleSelecteds.value = nuevosDatos;
-    
+  roleSelecteds.value = nuevosDatos;
 
   visible_roles.value = true;
-  usuario.value = data
+  usuario.value = data;
 };
 
 const guardarRolesAsignados = async () => {
-    const roles_id = []
-    if(roleSelecteds.value.length>0){
-        roleSelecteds.value.forEach(role => {
-            const { id, ...resto } = role;
-            roles_id.push(id);        
-        });
-    
-        await usuarioService.asignarRoles(usuario.value.id, {roles_id: roles_id})
-    
-        visible_roles.value = false
-        getUsuarios();
+  const roles_id = [];
+  if (roleSelecteds.value.length > 0) {
+    roleSelecteds.value.forEach((role) => {
+      const { id, ...resto } = role;
+      roles_id.push(id);
+    });
 
-    }
-}
+    await usuarioService.asignarRoles(usuario.value.id, { roles_id: roles_id });
+
+    visible_roles.value = false;
+    getUsuarios();
+  }
+};
 
 const generarPDF = async () => {
-    const respueta = await usuarioService.generarReportePDF();
+  const respueta = await usuarioService.generarReportePDF();
 
-    const url = window.URL.createObjectURL(new Blob([respueta.data], {type: 'application/pdf'}));
+  const url = window.URL.createObjectURL(
+    new Blob([respueta.data], { type: "application/pdf" })
+  );
 
-    const link = document.createElement('a');
-    link.href = url;
+  const link = document.createElement("a");
+  link.href = url;
 
-    link.setAttribute('download', 'lista-usuarios.pdf');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
+  link.setAttribute("download", "lista-usuarios.pdf");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 const generarPDF2 = async () => {
-    visible_pdf.value = true
-    
-    const respueta = await usuarioService.generarReportePDF();
+  visible_pdf.value = true;
 
-    const blob = new Blob([respueta.data], {type: 'application/pdf'});
-    pdfUrl.value = window.URL.createObjectURL(blob);
+  const respueta = await usuarioService.generarReportePDF();
 
-    const link = document.createElement('a');
-    link.href = url;
+  const blob = new Blob([respueta.data], { type: "application/pdf" });
+  pdfUrl.value = window.URL.createObjectURL(blob);
 
-    link.setAttribute('download', 'lista-usuarios.pdf');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-}
+  const link = document.createElement("a");
+  link.href = url;
+
+  link.setAttribute("download", "lista-usuarios.pdf");
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
 const seleccionarArchivos = async (e) => {
   console.log(e.target.files);
@@ -359,5 +420,35 @@ const seleccionarArchivos = async (e) => {
   fd.append("archivos", e.target.files[2]);
 
   await usuarioService.guardar(fd);
+};
+
+const datosPersonales = (user) => {
+  visible_persona.value = true;
+  dato_user_id.value = user.id;
+  if(user.persona){
+    persona.value = user?.persona;
+  }else{
+    persona.value = {};
+  }
+}
+const guardarDatosPersonales = async () => {
+  try {
+    if(persona.value.id){
+      persona.value.user_id = dato_user_id.value;
+      usuarioService.actualizarDatosPersonales(persona.value);
+    
+    }else{
+      persona.value.user_id = dato_user_id.value;
+      usuarioService.asignarDatosPersonales(persona.value);
+      
+
+    }
+    visible_persona.value = false;
+
+    getUsuarios();
+
+  } catch (error) {
+    alert("error al registrar los datos personales")
+  }
 }
 </script>
